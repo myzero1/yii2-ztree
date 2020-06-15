@@ -1,6 +1,6 @@
 {
     "name": "mallka/yii2-ztree",
-    "description": "对jqgrid的封装",
+    "description": "对Ztree的封装。",
     "type": "yii2-extension",
     "keywords": ["yii2","extension","ztree","widget"],
     "license": "MIT",
