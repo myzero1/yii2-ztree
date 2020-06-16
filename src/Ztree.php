@@ -6,7 +6,7 @@
 	use Yii;
 	use yii\base\InvalidConfigException;
 	use yii\db\ActiveRecord;
-
+	use yii\web\JsExpression;
 
 	class Ztree extends \yii\base\Widget
 	{
@@ -34,13 +34,23 @@
 		/**
 		 * @var  ztree成功的callback函数
 		 */
-		public $onSuccFunc;
+		private $onSuccFunc;
 
 		/**
 		 * @var ztree的callback函数
 		 */
-		public $onCheckFunc;
+		private $onCheckFunc;
 
+		/**
+		 * @var radio/checkbox的是否只读
+		 */
+		private $readOnlyfunc;
+
+		/**
+		 * 有Radio或者checkbox时，是否只读。
+		 * @var bool
+		 */
+		public $readOnly=false;
 
 
 		/**
@@ -99,13 +109,20 @@
 		public $checkbox = false;
 
 
-
-
-
 		/**
 		 * @var bool 单选
 		 */
 		public $radio = false;
+
+		/**
+		 * Css hack，控制ztree的布局。一级分类横向展示
+		 *
+		 * @var boolean
+		 */
+		public $align;
+
+
+
 
 		public function init()
 		{
@@ -116,14 +133,13 @@
 			if($this->onSuccFunc==null)
 				$this->onSuccFunc = 'onSucc'.time();
 
+			if($this->readOnlyfunc==null)
+				$this->readOnlyfunc='readOnly'.time();
+
+			if($this->align==true)
+				$this->align = new JsExpression("\$('.ztree >li').css('float','left');$('.ztree >li').css('display','inline');");
 
 
-
-			//可选值时，设置指定值为选中值
-			if($this->checkbox ||$this->radio)
-			{
-
-			}
 
 
 		}
@@ -134,7 +150,8 @@
 			Asset::register($view);
 
 
-			return $this->_render();
+			$js = $this->_render();
+			$this->getView()->registerJs($js,\yii\web\View::POS_END);
 
 		}
 
@@ -166,9 +183,10 @@ Eof;
 check: {
 	enable: true,
 	chkStyle:'radio',
+	radioType:'all',
 	chkboxType : { "Y" : "ps", "N" : "ps" },
 },
-				
+
 Eof;
 					return $str;
 				}
@@ -194,12 +212,7 @@ data: {
 },
 	
 EOF;
-			if ($this->data_ajax == false) {
-				return $str;
-			}else {
-				return '';
-			}
-
+			return $str;
 		}
 
 		/**
@@ -209,7 +222,11 @@ EOF;
 		 */
 		public function _getUrlSetting()
 		{
-			$str= <<<EOF
+
+
+			if($this->data_ajax)
+			{
+				$str= <<<EOF
 async: {
 	enable: true,
 		type: "get",
@@ -217,7 +234,12 @@ async: {
 		autoParam: ["id", "name"]
 	},
 EOF;
-			return $this->data_ajax ? $str : '';
+				return $str;
+			}
+			else
+			{
+				return '';
+			}
 
 		}
 
@@ -225,6 +247,7 @@ EOF;
 
 		public function onSyncSuccess()
 		{
+			$selValStr='';
 			if($this->radio){
 				if(!empty($this->selVal))
 					$selValStr = '['.$this->selVal[0].']';
@@ -236,6 +259,8 @@ EOF;
 
 			}
 
+
+			$readonly = $this->readOnly ? " $this->readOnlyfunc();":'';
 
 			$str= <<< EOF
 	function {$this->onSuccFunc} () {
@@ -250,10 +275,13 @@ EOF;
 			
 		}
 		zTree.expandAll(true);
+		
+		$readonly
 
 	}
 EOF;
 
+			return $str;
 		}
 
 
@@ -262,7 +290,7 @@ EOF;
 			$str =<<< EOF
 	function {$this->onCheckFunc} () {
 
-		var zTree=$.fn.zTree.getZTreeObj("treeDemo"),
+		var zTree=$.fn.zTree.getZTreeObj("{$this->eleId}");
         nodes=zTree.getCheckedNodes(true),
         v="";
         for(var i=0;i<nodes.length;i++){
@@ -272,10 +300,12 @@ EOF;
         }
 		v=v.substring(0,v.length-1);
 		//alert(v);
-		$('{$this->selValEleId}').val(v);
+		$('#{$this->selValEleId}').val(v);
 	}
 	
 EOF;
+
+			return $str;
 
 		}
 
@@ -293,6 +323,28 @@ EOF;
 		}
 
 
+		public function _readOnly()
+		{
+
+			$str =<<<EOF
+			function $this->readOnlyfunc (){
+				 var treeObj = $.fn.zTree.getZTreeObj('$this->eleId');
+			     var node = treeObj.getNodes(); 
+				 var nodes = treeObj.transformToArray(node); 
+
+				for(i=0;i<nodes.length;i++){
+    				var nodechecked = treeObj.getNodeByParam("id", nodes[i].id);
+    				treeObj.setChkDisabled(nodechecked,true);
+    			}
+			}
+EOF;
+			return $str;
+
+		}
+
+
+
+
 		public function _render()
 		{
 
@@ -300,7 +352,7 @@ EOF;
 			//初始化设置
 			$temp="var setting = {";
 			$temp.=$this->_checkStyleSetting();
-			$temp.=$this->_getDataSetting();
+			$temp.=$this->_getUrlSetting();
 			$temp.=$this->_getDataSetting();
 			$temp.=$this->_callback();
 			$temp.='};';
@@ -308,23 +360,35 @@ EOF;
 			//实例化常规函数
 			$temp.="\r\n".$this->onSyncSuccess();
 			$temp.="\r\n".$this->_onCheck();
+			if($this->readOnly)
+				$temp.="\r\n".$this->_readOnly();
+
+
+
+
+			$align = $this->align ? $this->align :'';
 
 			//渲染
-			if($this->data_ajax)
+			if(!$this->data_ajax)
 			{
+				$readonly = $this->readOnly ? " $this->readOnlyfunc();":'';
 				$data = json_encode($this->data);
 				$str =<<< EOF
 				\$(document).ready(function(e){
-					\$.fn.zTree.init($("$this->eleId"), setting,$data);
-				}
+					\$.fn.zTree.init($("#$this->eleId"), setting,$data);
+
+					$readonly
+					$align
+				});
 EOF;
 
 			}
 			else{
 				$str =<<< EOF
 				\$(document).ready(function(e){
-					\$.fn.zTree.init($("$this->eleId"), setting);
-				}
+					\$.fn.zTree.init($("#$this->eleId"), setting);
+					$align
+				});
 EOF;
 			}
 
