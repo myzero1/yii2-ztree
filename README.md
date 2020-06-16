@@ -1,6 +1,6 @@
 Ztree widget for  yii2
 =============
-** 因封装过于简陋，仅满足mallka内部使用。
+**因封装过于简陋，仅满足mallka内部使用。
 Please do not use for your product beacuse we still not test enough!** 
 
 
