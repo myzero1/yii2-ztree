@@ -77,7 +77,7 @@ function actionAjaxnode()
        'data'=>Model::find()->where(xxxx)->all(),
        'radio'=>true,
        'selVal'=>[956,957],
-       readOnly'=>true,
+       'readOnly'=>true,
    ])?>
 ```
 
