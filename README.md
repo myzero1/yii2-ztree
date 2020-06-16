@@ -1,6 +1,7 @@
 Ztree widget for  yii2
 =============
 因封装过于简陋，仅满足mallka内部使用。
+Please do not use for your product beacuse we still not test enough!
 
 
 支持：
@@ -82,6 +83,7 @@ function actionAjaxnode()
 
 
 #### 基本使用4（ActiveForm） 
+注意，字段的值必需是tree的一个id，或多个id，多个id用英文逗号分隔。
 ```php
 <?= $form->field($model, 'kind_value')->widget(
     \mallka\ztree\Ztree::class,
