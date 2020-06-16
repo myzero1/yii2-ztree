@@ -1,7 +1,7 @@
 Ztree widget for  yii2
 =============
-因封装过于简陋，仅满足mallka内部使用。
-Please do not use for your product beacuse we still not test enough!
+** 因封装过于简陋，仅满足mallka内部使用。
+Please do not use for your product beacuse we still not test enough!** 
 
 
 支持：
@@ -19,7 +19,7 @@ composer require mallka/yii2-ztree "dev-master"
 
 ```
 
-####基本使用(Ajax)
+#### 基本使用(Ajax)
 ```
     <?=\mallka\ztree\Ztree::widget([
        'eleId'=>'treeDemo222',
@@ -50,7 +50,7 @@ function actionAjaxnode()
 
 
 
-####基本使用2(静态数组)
+#### 基本使用2(静态数组)
 ```php
 	<?=\mallka\ztree\Ztree::widget([
        'eleId'=>'treeDemo222',
@@ -69,7 +69,7 @@ function actionAjaxnode()
 	])?>
 ```
 
-####基本使用3（model）
+#### 基本使用3（model）
 ```php
 	<?=\mallka\ztree\Ztree::widget([
        'eleId'=>'treeDemo222',
