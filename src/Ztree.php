@@ -134,9 +134,6 @@
 			Asset::register($view);
 
 
-			$view = $this->getView();
-			JqgridAsset::register($view);
-
 			return $this->_render();
 
 		}
