@@ -272,8 +272,16 @@ EOF;
 				if (!empty($this->selVal))
 					$selValStr = '[' . $this->selVal[0] . ']';
 			}elseif ($this->checkbox) {
-				if (!empty($this->selVal))
-					$selValStr = '[' . implode(',', $this->selVal) . ']';
+				if (!empty($this->selVal) )
+				{
+					if(is_array($this->selVal)){
+						$selValStr = '[' . implode(',', $this->selVal) . ']';
+					}
+					else{
+						$selValStr = '[' . $this->selVal. ']';
+
+					}
+				}
 
 			}
 
