@@ -3,12 +3,11 @@
 	namespace mallka\ztree;
 
 	use http\Exception\InvalidArgumentException;
-	use Yii;
-	use yii\base\InvalidConfigException;
-	use yii\db\ActiveRecord;
+	use yii\bootstrap4\InputWidget;
+	use yii\helpers\Html;
 	use yii\web\JsExpression;
 
-	class Ztree extends \yii\base\Widget
+	class Ztree extends InputWidget
 	{
 
 		/**
@@ -16,20 +15,21 @@
 		 *
 		 * @var string
 		 */
-		public $eleId='treeDemo';
+		public $eleId = 'treeDemo';
 
 		/**
 		 * @var array  选中的值，[1,2,3]
 		 */
-		public $selVal=[];
+		public $selVal = [];
 
 		/**
 		 * 当用户在ztree上操作时，ztree实时得到选中后的id集合，以逗号分隔组合起来的字符串，
 		 * 将该字符串存储在该id值里。
 		 * 如果允许选中，则该值建议设置
+		 *
 		 * @var string
 		 */
-		public $selValEleId='';
+		public $selValEleId = '';
 
 		/**
 		 * @var  ztree成功的callback函数
@@ -48,10 +48,10 @@
 
 		/**
 		 * 有Radio或者checkbox时，是否只读。
+		 *
 		 * @var bool
 		 */
-		public $readOnly=false;
-
+		public $readOnly = false;
 
 		/**
 		 * @var  数据源
@@ -108,7 +108,6 @@
 		 */
 		public $checkbox = false;
 
-
 		/**
 		 * @var bool 单选
 		 */
@@ -121,26 +120,35 @@
 		 */
 		public $align;
 
-
-
-
 		public function init()
 		{
+			if ($this->onCheckFunc == null)
+				$this->onCheckFunc = 'onCheck' . time();
 
-			if($this->onCheckFunc==null)
-				$this->onCheckFunc='onCheck'.time();
+			if ($this->onSuccFunc == null)
+				$this->onSuccFunc = 'onSucc' . time();
 
-			if($this->onSuccFunc==null)
-				$this->onSuccFunc = 'onSucc'.time();
+			if ($this->readOnlyfunc == null)
+				$this->readOnlyfunc = 'readOnly' . time();
 
-			if($this->readOnlyfunc==null)
-				$this->readOnlyfunc='readOnly'.time();
-
-			if($this->align==true)
+			if ($this->align == true)
 				$this->align = new JsExpression("\$('.ztree >li').css('float','left');$('.ztree >li').css('display','inline');");
 
+			//如果是作为model的widget方式传进来。
+			if (isset($this->model) && isset($this->attribute)) {
+				$attr         = $this->attribute;
+				$this->selVal = $this->model->$attr;
+			}
 
-
+			if ($this->hasModel()) {
+				$attr         = $this->attribute;
+				$val          = $this->model->{$attr};
+				$this->selVal = $this->model->$attr;
+				if (strpos($this->selVal, ','))
+					$this->selVal = explode(',', $this->selVal);
+				$this->eleId       = strtolower($this->model->formName()) . '-' . $this->attribute . '-ztree';
+				$this->selValEleId = strtolower($this->model->formName()) . '-' . $this->attribute;
+			}
 
 		}
 
@@ -149,9 +157,27 @@
 			$view = $this->getView();
 			Asset::register($view);
 
-
 			$js = $this->_render();
-			$this->getView()->registerJs($js,\yii\web\View::POS_END);
+			$this->getView()->registerJs($js, \yii\web\View::POS_END);
+
+			//input
+			$input = '';
+			if ($this->hasModel()) {
+				$attr  = $this->attribute;
+				$val   = $this->model->{$attr};
+				$opt   = [
+					'id'    => strtolower($this->model->formName()) . '-' . $this->attribute,
+					'class' => 'form-control',
+				];
+				$input = Html::input('hidden', $this->model->formName() . '[' . $this->attribute . ']', $val, $opt);
+			}
+
+			$str
+				= <<< E
+			 $input
+			 <ul id="$this->eleId" class="ztree"></ul>
+E;
+			return $str;
 
 		}
 
@@ -222,11 +248,9 @@ EOF;
 		 */
 		public function _getUrlSetting()
 		{
-
-
-			if($this->data_ajax)
-			{
-				$str= <<<EOF
+			if ($this->data_ajax) {
+				$str
+					= <<<EOF
 async: {
 	enable: true,
 		type: "get",
@@ -235,34 +259,28 @@ async: {
 	},
 EOF;
 				return $str;
-			}
-			else
-			{
+			}else {
 				return '';
 			}
 
 		}
 
-
-
 		public function onSyncSuccess()
 		{
-			$selValStr='';
-			if($this->radio){
-				if(!empty($this->selVal))
-					$selValStr = '['.$this->selVal[0].']';
-			}
-			elseif ($this->checkbox)
-			{
-				if(!empty($this->selVal))
-					$selValStr = '['.implode(',',$this->selVal).']';
+			$selValStr = '';
+			if ($this->radio) {
+				if (!empty($this->selVal))
+					$selValStr = '[' . $this->selVal[0] . ']';
+			}elseif ($this->checkbox) {
+				if (!empty($this->selVal))
+					$selValStr = '[' . implode(',', $this->selVal) . ']';
 
 			}
 
+			$readonly = $this->readOnly ? " $this->readOnlyfunc();" : '';
 
-			$readonly = $this->readOnly ? " $this->readOnlyfunc();":'';
-
-			$str= <<< EOF
+			$str
+				= <<< EOF
 	function {$this->onSuccFunc} () {
 		var zTree = $.fn.zTree.getZTreeObj("{$this->eleId}");
 		var allcatid="$selValStr";
@@ -284,10 +302,10 @@ EOF;
 			return $str;
 		}
 
-
 		public function _onCheck()
 		{
-			$str =<<< EOF
+			$str
+				= <<< EOF
 	function {$this->onCheckFunc} () {
 
 		var zTree=$.fn.zTree.getZTreeObj("{$this->eleId}");
@@ -311,7 +329,8 @@ EOF;
 
 		public function _callback()
 		{
-			$str= <<< EOF
+			$str
+				= <<< EOF
 			callback: {
 				onAsyncSuccess: {$this->onSuccFunc}  ,
 				onCheck: {$this->onCheckFunc}
@@ -322,11 +341,10 @@ EOF;
 
 		}
 
-
 		public function _readOnly()
 		{
-
-			$str =<<<EOF
+			$str
+				= <<<EOF
 			function $this->readOnlyfunc (){
 				 var treeObj = $.fn.zTree.getZTreeObj('$this->eleId');
 			     var node = treeObj.getNodes(); 
@@ -342,49 +360,40 @@ EOF;
 
 		}
 
-
-
-
 		public function _render()
 		{
-
-
 			//初始化设置
-			$temp="var setting = {";
-			$temp.=$this->_checkStyleSetting();
-			$temp.=$this->_getUrlSetting();
-			$temp.=$this->_getDataSetting();
-			$temp.=$this->_callback();
-			$temp.='};';
+			$temp = "var setting = {";
+			$temp .= $this->_checkStyleSetting();
+			$temp .= $this->_getUrlSetting();
+			$temp .= $this->_getDataSetting();
+			$temp .= $this->_callback();
+			$temp .= '};';
 
 			//实例化常规函数
-			$temp.="\r\n".$this->onSyncSuccess();
-			$temp.="\r\n".$this->_onCheck();
-			if($this->readOnly)
-				$temp.="\r\n".$this->_readOnly();
+			$temp .= "\r\n" . $this->onSyncSuccess();
+			$temp .= "\r\n" . $this->_onCheck();
+			if ($this->readOnly)
+				$temp .= "\r\n" . $this->_readOnly();
 
-
-
-
-			$align = $this->align ? $this->align :'';
+			$align = $this->align ? $this->align : '';
 
 			//渲染
-			if(!$this->data_ajax)
-			{
-				$readonly = $this->readOnly ? " $this->readOnlyfunc();":'';
-				$data = json_encode($this->data);
-				$str =<<< EOF
+			if (!$this->data_ajax) {
+				$readonly = $this->readOnly ? " $this->readOnlyfunc();" : '';
+				$data     = json_encode($this->data);
+				$str
+						  = <<< EOF
 				\$(document).ready(function(e){
 					\$.fn.zTree.init($("#$this->eleId"), setting,$data);
-
 					$readonly
 					$align
 				});
 EOF;
 
-			}
-			else{
-				$str =<<< EOF
+			}else {
+				$str
+					= <<< EOF
 				\$(document).ready(function(e){
 					\$.fn.zTree.init($("#$this->eleId"), setting);
 					$align
@@ -392,8 +401,7 @@ EOF;
 EOF;
 			}
 
-
-			return $temp."\r\n".$str;
+			return $temp . "\r\n" . $str;
 
 		}
 

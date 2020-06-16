@@ -79,3 +79,21 @@ function actionAjaxnode()
        readOnly'=>true,
    ])?>
 ```
+
+
+#### 基本使用4（ActiveForm） 
+```php
+<?= $form->field($model, 'kind_value')->widget(
+    \mallka\ztree\Ztree::class,
+    [
+    
+               'data'=>\yii\helpers\Url::to(['product-category/ajaxnode'],true),
+               'data_ajax'=>true,
+               'checkbox'=>true,
+               //'readOnly'=>true,
+    ]
+) ?>
+
+
+
+```
