@@ -296,6 +296,7 @@ EOF;
 			var allcatarr = JSON.parse(allcatid);
 			for(var i=0;i<allcatarr.length;i++){
 				var nodechecked = zTree.getNodeByParam("id", allcatarr[i]);
+				if(nodechecked!=null)
 				zTree.checkNode(nodechecked,true);
 			}
 			
