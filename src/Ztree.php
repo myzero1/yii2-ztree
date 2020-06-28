@@ -42,6 +42,13 @@
 		private $onCheckFunc;
 
 		/**
+		 * 其他callback的配置，js段落
+		 * @var
+		 */
+		public $onOtherSegment;
+
+
+		/**
 		 * @var radio/checkbox的是否只读
 		 */
 		private $readOnlyfunc;
@@ -338,11 +345,15 @@ EOF;
 
 		public function _callback()
 		{
+			$temp ='';
+			if($this->onOtherSegment!=null)
+				$temp=','.$this->onOtherSegment;
 			$str
 				= <<< EOF
 			callback: {
 				onAsyncSuccess: {$this->onSuccFunc}  ,
 				onCheck: {$this->onCheckFunc}
+				{$temp}
 			}
 EOF;
 
