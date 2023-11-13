@@ -3,7 +3,8 @@
 	namespace mallka\ztree;
 
 	use http\Exception\InvalidArgumentException;
-	use yii\bootstrap4\InputWidget;
+	// use yii\bootstrap4\InputWidget;
+	use yii\bootstrap\InputWidget;
 	use yii\helpers\Html;
 	use yii\web\JsExpression;
 
