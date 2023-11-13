@@ -329,9 +329,10 @@ EOF;
         nodes=zTree.getCheckedNodes(true),
         v="";
         for(var i=0;i<nodes.length;i++){
-			if(nodes[i].isParent!=true){
-				v+=nodes[i].id + ",";
-			}
+			v+=nodes[i].id + ",";
+			// if(nodes[i].isParent!=true){
+			// 	v+=nodes[i].id + ",";
+			// }
         }
 		v=v.substring(0,v.length-1);
 		//alert(v);
