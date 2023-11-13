@@ -1,6 +1,6 @@
 Ztree widget for  yii2
 =============
-**因封装过于简陋，仅满足mallka内部使用。
+**因封装过于简陋，仅满足myzero1内部使用。
 Please do not use for your product beacuse we still not test enough!** 
 
 
@@ -15,13 +15,13 @@ Please do not use for your product beacuse we still not test enough!**
 
 引入包：
 ```
-composer require mallka/yii2-ztree "dev-master"
+composer require myzero1/yii2-ztree "dev-master"
 
 ```
 
 #### 基本使用(Ajax)
 ```
-    <?=\mallka\ztree\Ztree::widget([
+    <?=\myzero1\ztree\Ztree::widget([
        'eleId'=>'treeDemo222',
        'data'=>\yii\helpers\Url::to(['product-category/ajaxnode'],true),
        'data_ajax'=>true,             //ajax加载数据模式 
@@ -52,7 +52,7 @@ function actionAjaxnode()
 
 #### 基本使用2(静态数组)
 ```php
-	<?=\mallka\ztree\Ztree::widget([
+	<?=\myzero1\ztree\Ztree::widget([
        'eleId'=>'treeDemo222',
        'selValEleId'=>"alltypeid",
        'data'=>[           //没有dat_ajax,改为以下格式数组
@@ -71,7 +71,7 @@ function actionAjaxnode()
 
 #### 基本使用3（model）
 ```php
-	<?=\mallka\ztree\Ztree::widget([
+	<?=\myzero1\ztree\Ztree::widget([
        'eleId'=>'treeDemo222',
        'selValEleId'=>"alltypeid",
        'data'=>Model::find()->where(xxxx)->all(),
@@ -86,7 +86,7 @@ function actionAjaxnode()
 注意，字段的值必需是tree的一个id，或多个id，多个id用英文逗号分隔。
 ```php
 <?= $form->field($model, 'kind_value')->widget(
-    \mallka\ztree\Ztree::class,
+    \myzero1\ztree\Ztree::class,
     [
     
                'data'=>\yii\helpers\Url::to(['product-category/ajaxnode'],true),
